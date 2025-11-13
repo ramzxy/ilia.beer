@@ -28,10 +28,6 @@ export default function LenisScrollProvider({
     const lenisInstance = new Lenis({
       duration: 1.8,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      direction: 'vertical',
-      gestureDirection: 'vertical',
-      smooth: true,
-      smoothWheel: true,
       wheelMultiplier: 1,
       touchMultiplier: 2,
       infinite: false,
@@ -41,14 +37,15 @@ export default function LenisScrollProvider({
     document.documentElement.classList.add('lenis');
     document.documentElement.classList.add('lenis-smooth');
 
-    setLenis(lenisInstance);
-
     function raf(time: number) {
       lenisInstance.raf(time);
       rafRef.current = requestAnimationFrame(raf);
     }
 
     rafRef.current = requestAnimationFrame(raf);
+    
+    // Defer state update to avoid cascading renders
+    queueMicrotask(() => setLenis(lenisInstance));
 
     return () => {
       if (rafRef.current) {
