@@ -31,7 +31,6 @@ export default function LenisScrollProvider({
       smoothWheel: true,
       wheelMultiplier: 0.7, // Slower wheel scrolling
       touchMultiplier: 0,
-      touchInertiaMultiplier: 0,
       infinite: false,
     });
 
