@@ -2,7 +2,7 @@
 
 namespace Ilia\Backend\TableGateways;
 
-class videoGateway {
+class VideoGateway {
     private $db = null;
 
     public function __construct($dbConnection) {

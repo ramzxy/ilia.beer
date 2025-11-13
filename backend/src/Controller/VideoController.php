@@ -2,7 +2,7 @@
 
 namespace Ilia\Backend\Controller;
 
-use Ilia\Backend\TableGateways\videoGateway;
+use Ilia\Backend\TableGateways\VideoGateway;
 
 class VideoController{
     private $db = null;
@@ -14,7 +14,7 @@ class VideoController{
     public function __construct($db, $requestMethod, $uri, $bucket = null){
         $this->db = $db;
         $this->requestMethod = $requestMethod;
-        $this->videoGateway = new videoGateway($db);
+        $this->videoGateway = new VideoGateway($db);
         $this->uri = $uri;
         $this->bucket = $bucket;
     }
