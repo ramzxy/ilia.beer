@@ -11,12 +11,10 @@ services:
     image: cloudflare/cloudflared:latest
     container_name: ilia-beer-tunnel
     platform: linux/arm64
-    command: tunnel --config /etc/cloudflared/config.yml run
+    command: tunnel --config /etc/cloudflared/config.yml run 0a3a87bd-eea9-4613-a61b-8bdad26a4090
     volumes:
-      # Mount the config file and credentials
-      # Update these paths to match your home directory
-      - ${HOME}/.cloudflared/config.yml:/etc/cloudflared/config.yml:ro
-      - ${HOME}/.cloudflared/0a3a87bd-eea9-4613-a61b-8bdad26a4090.json:/etc/cloudflared/0a3a87bd-eea9-4613-a61b-8bdad26a4090.json:ro
+      # Mount the entire .cloudflared directory (cloudflared looks here by default)
+      - /home/ilia/.cloudflared:/etc/cloudflared:ro
     restart: unless-stopped
     depends_on:
       - backend
