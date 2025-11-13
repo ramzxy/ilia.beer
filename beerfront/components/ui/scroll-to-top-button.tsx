@@ -1,38 +1,63 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLenis } from "@/app/providers/lenis-provider";
 
 export default function ScrollToTopButton() {
   const [isVisible, setIsVisible] = useState(false);
   const lenis = useLenis();
 
+  const toggleVisibility = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    
+    // Use Lenis scroll position if available, otherwise use window scroll
+    const scrollY = lenis?.scroll ?? window.scrollY ?? document.documentElement.scrollTop ?? 0;
+    setIsVisible(scrollY > 300);
+  }, [lenis]);
+
   useEffect(() => {
-    const toggleVisibility = () => {
-      // Use Lenis scroll position if available, otherwise use window scroll
-      const scrollY = lenis ? lenis.scroll : window.scrollY || document.documentElement.scrollTop;
-      setIsVisible(scrollY > 300);
-    };
+    if (typeof window === 'undefined') return;
 
     if (lenis) {
       // Desktop: Listen to Lenis scroll events
       lenis.on("scroll", toggleVisibility);
+      // Initial check
+      toggleVisibility();
+      
       return () => {
         lenis.off("scroll", toggleVisibility);
       };
     } else {
-      // Mobile: Listen to native scroll events
-      window.addEventListener("scroll", toggleVisibility, { passive: true });
+      // Mobile: Listen to native scroll events with throttling
+      let ticking = false;
+      const handleScroll = () => {
+        if (!ticking) {
+          window.requestAnimationFrame(() => {
+            toggleVisibility();
+            ticking = false;
+          });
+          ticking = true;
+        }
+      };
+
+      window.addEventListener("scroll", handleScroll, { passive: true });
+      // Initial check
+      toggleVisibility();
+      
       return () => {
-        window.removeEventListener("scroll", toggleVisibility);
+        window.removeEventListener("scroll", handleScroll);
       };
     }
-  }, [lenis]);
+  }, [lenis, toggleVisibility]);
 
-  const scrollToTop = () => {
+  const scrollToTop = useCallback(() => {
     if (lenis) {
       // Desktop: Use Lenis smooth scroll
-      lenis.scrollTo(0, { immediate: false });
+      lenis.scrollTo(0, { 
+        duration: 1.2,
+        easing: (t: number) => 1 - Math.pow(1 - t, 3),
+        immediate: false 
+      });
     } else {
       // Mobile: Use native smooth scroll
       window.scrollTo({
@@ -40,7 +65,7 @@ export default function ScrollToTopButton() {
         behavior: "smooth",
       });
     }
-  };
+  }, [lenis]);
 
   return (
     <button

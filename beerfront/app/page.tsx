@@ -203,7 +203,7 @@ export default function Page() {
       </section>
 
       {/* Video Feed */}
-      <main className="relative z-10 md:max-w-xl md:mx-auto md:px-4 md:py-8 md:space-y-2">
+      <main className="relative z-10 md:max-w-xl md:mx-auto md:px-4 md:py-8 md:space-y-12">
         {loading ? (
           <div className="min-h-screen snap-start flex items-center justify-center md:py-20">
             <div className="flex flex-col items-center gap-4">

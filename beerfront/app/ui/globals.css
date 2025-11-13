@@ -125,8 +125,8 @@ html.lenis {
   height: auto;
 }
 
-.lenis.lenis-smooth {
-  scroll-behavior: auto;
+html.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
 }
 
 .lenis.lenis-smooth [data-lenis-prevent] {
@@ -141,17 +141,23 @@ html.lenis {
   pointer-events: none;
 }
 
+/* Prevent layout shift during scroll */
+html {
+  scroll-padding-top: 0;
+}
+
 /* Mobile: Native CSS scroll-snap (Lenis disabled) */
 @media (max-width: 767px) {
   html {
     scroll-snap-type: y mandatory;
     scroll-behavior: smooth;
-    scroll-padding-top: 0;
+    -webkit-overflow-scrolling: touch;
   }
   
   body {
     scroll-snap-type: y mandatory;
     scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
   }
   
   .snap-start {
@@ -159,17 +165,22 @@ html.lenis {
     scroll-snap-stop: always;
   }
   
-  /* Smooth scroll timing */
-  * {
+  /* Smooth scroll timing for mobile */
+  html {
     scroll-behavior: smooth;
   }
 }
 
 /* Desktop: Lenis smooth scroll (no scroll-snap) */
 @media (min-width: 768px) {
-  html {
+  html.lenis {
+    scroll-snap-type: none !important;
+    scroll-behavior: auto !important;
+  }
+  
+  html:not(.lenis) {
     scroll-snap-type: none;
-    scroll-behavior: auto;
+    scroll-behavior: smooth;
   }
   
   body {
@@ -178,6 +189,11 @@ html.lenis {
   
   .snap-start {
     scroll-snap-align: none;
+  }
+  
+  /* Ensure smooth scrolling when Lenis is active */
+  html.lenis.lenis-smooth {
+    scroll-behavior: auto !important;
   }
 }
 
