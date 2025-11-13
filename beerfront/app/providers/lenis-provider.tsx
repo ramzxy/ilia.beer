@@ -26,13 +26,20 @@ export default function LenisScrollProvider({
 
     // Desktop: Initialize Lenis for smooth scrolling
     const lenisInstance = new Lenis({
-      duration: 2.0, // Slower scroll duration
-      easing: (t) => 1 - Math.pow(1 - t, 3), // Smoother cubic ease-out
+      duration: 1.8,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      direction: 'vertical',
+      gestureDirection: 'vertical',
+      smooth: true,
       smoothWheel: true,
-      wheelMultiplier: 0.7, // Slower wheel scrolling
-      touchMultiplier: 0,
+      wheelMultiplier: 1,
+      touchMultiplier: 2,
       infinite: false,
     });
+
+    // Add lenis class to html element for CSS targeting
+    document.documentElement.classList.add('lenis');
+    document.documentElement.classList.add('lenis-smooth');
 
     setLenis(lenisInstance);
 
@@ -48,6 +55,8 @@ export default function LenisScrollProvider({
         cancelAnimationFrame(rafRef.current);
       }
       lenisInstance.destroy();
+      document.documentElement.classList.remove('lenis');
+      document.documentElement.classList.remove('lenis-smooth');
       setLenis(null);
     };
   }, []);
