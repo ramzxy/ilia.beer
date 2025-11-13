@@ -29,7 +29,6 @@ export default function LenisScrollProvider({
       duration: 2.0, // Slower scroll duration
       easing: (t) => 1 - Math.pow(1 - t, 3), // Smoother cubic ease-out
       smoothWheel: true,
-      smoothTouch: false, // Not needed on desktop
       wheelMultiplier: 0.7, // Slower wheel scrolling
       touchMultiplier: 0,
       touchInertiaMultiplier: 0,
