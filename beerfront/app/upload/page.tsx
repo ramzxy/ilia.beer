@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { videoService } from "../lib/api/videos";
 
 export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -40,45 +41,19 @@ export default function UploadPage() {
     setUploadProgress(0);
 
     try {
-      // Step 1: Send caption to backend and get signed URL
-      const response = await fetch(
-        "http://localhost:8000/api/videos/signed-url",
-        {
-          method: "POST",
-          mode: "cors",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ caption: caption.trim() }),
+      const { fileName } = await videoService.upload(
+        file,
+        caption.trim(),
+        (progress) => {
+          setUploadProgress(progress);
+          if (progress === 10) {
+            setUploadStatus("Creating video entry...");
+          } else if (progress === 50) {
+            setUploadStatus(`Uploading ${file.name}...`);
+          }
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`Failed to get signed URL: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      const { signedUrl, fileName } = data;
-      setUploadStatus(`Uploading ${file.name}...`);
-
-      // Step 2: Upload file to Google Cloud Storage using signed URL
-      const uploadResponse = await fetch(signedUrl, {
-        method: "PUT",
-        body: file,
-        headers: {
-          "Content-Type": "video/mp4",
-        },
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error(
-          `Failed to upload to storage: ${uploadResponse.status}`
-        );
-      }
-
-      setUploadProgress(100);
       setUploadStatus(`Upload successful! File: ${fileName}`);
 
       // Reset form

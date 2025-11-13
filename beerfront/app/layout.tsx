@@ -1,4 +1,5 @@
 import "./ui/globals.css";
+import LenisScrollProvider from "./providers/lenis-provider";
 
 export default function RootLayout({
   children,
@@ -7,7 +8,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <LenisScrollProvider>{children}</LenisScrollProvider>
+      </body>
     </html>
   );
 }
