@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000",
+  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "https://api.ilia.beer",
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",

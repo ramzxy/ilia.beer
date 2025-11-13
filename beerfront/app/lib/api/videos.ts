@@ -73,5 +73,19 @@ export const videoService = {
     if (onProgress) onProgress(100);
     return { signedUrl, fileName };
   },
+
+  /**
+   * Update video caption
+   */
+  async update(id: number, caption: string): Promise<void> {
+    await apiClient.put(`/api/videos/${id}`, { caption });
+  },
+
+  /**
+   * Delete a video
+   */
+  async delete(id: number): Promise<void> {
+    await apiClient.delete(`/api/videos/${id}`);
+  },
 };
 

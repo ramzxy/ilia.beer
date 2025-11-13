@@ -43,4 +43,54 @@ class VideoGateway {
             exit($e->getMessage());
         }
     }
+
+    public function Update($id, $caption) {
+        $query = "
+            UPDATE videos 
+            SET caption = :caption
+            WHERE id = :id
+        ";
+
+        try {
+            $stmt = $this->db->prepare($query);
+            $stmt->execute([
+                'id' => $id,
+                'caption' => $caption
+            ]);
+            return $stmt->rowCount();
+        } catch (\PDOException $e) {
+            exit($e->getMessage());
+        }
+    }
+
+    public function Delete($id) {
+        $query = "
+            DELETE FROM videos 
+            WHERE id = :id
+        ";
+
+        try {
+            $stmt = $this->db->prepare($query);
+            $stmt->execute(['id' => $id]);
+            return $stmt->rowCount();
+        } catch (\PDOException $e) {
+            exit($e->getMessage());
+        }
+    }
+
+    public function GetById($id) {
+        $query = "
+            SELECT id, caption, url, created_at 
+            FROM videos
+            WHERE id = :id
+        ";
+
+        try {
+            $stmt = $this->db->prepare($query);
+            $stmt->execute(['id' => $id]);
+            return $stmt->fetch(\PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            exit($e->getMessage());
+        }
+    }
 }
