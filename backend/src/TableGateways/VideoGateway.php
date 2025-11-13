@@ -11,7 +11,7 @@ class videoGateway {
 
     public function GetAll() {
         $query = "
-            SELECT caption, url 
+            SELECT id, caption, url, created_at 
             FROM videos
             ORDER BY created_at DESC
         ";
@@ -21,6 +21,24 @@ class videoGateway {
             $result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
             return $result;
+        } catch (\PDOException $e) {
+            exit($e->getMessage());
+        }
+    }
+
+    public function Insert($caption, $url) {
+        $query = "
+            INSERT INTO videos (caption, url)
+            VALUES (:caption, :url)
+        ";
+
+        try {
+            $stmt = $this->db->prepare($query);
+            $stmt->execute([
+                'caption' => $caption,
+                'url' => $url
+            ]);
+            return $this->db->lastInsertId();
         } catch (\PDOException $e) {
             exit($e->getMessage());
         }

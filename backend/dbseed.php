@@ -1,5 +1,6 @@
 <?php
-$dbConnection = require 'bootstrap.php';
+$bootstrap = require 'bootstrap.php';
+$dbConnection = $bootstrap['db'];
 
 $query = <<<EOS
     CREATE TABLE IF NOT EXISTS videos (
@@ -8,11 +9,6 @@ $query = <<<EOS
         url TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=INNODB;
-
-    INSERT INTO videos
-    (caption, url)
-    VALUES
-        ('test caption lalala', 'Test url lalala')
 EOS;
 
 try {
