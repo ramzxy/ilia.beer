@@ -21,8 +21,8 @@ This guide will help you deploy the frontend to Vercel from the root directory.
 
 The `vercel.json` file will handle:
 - **Framework Preset**: Next.js (auto-detected)
-- **Build Command**: `cd beerfront && npm install && npm run build`
-- **Output Directory**: `beerfront/.next`
+- **Build Command**: `npm install && npm run build` (runs from beerfront directory)
+- **Output Directory**: `.next` (relative to beerfront directory)
 
 To set Root Directory:
 1. After importing the repo, go to **Settings → General**
