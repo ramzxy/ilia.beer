@@ -3,7 +3,7 @@
 export default function BuyMeBeerButton() {
   return (
     <a
-      href="https://www.buymeacoffee.com/rmxzy"
+      href="https://buymeacoffee.com/rmxzy/e/473225"
       target="_blank"
       rel="noopener noreferrer"
       className="inline-flex items-center gap-3 px-8 py-4 bg-amber-500 hover:bg-amber-400 backdrop-blur-sm text-black font-bold text-lg rounded-full transition-all hover:scale-110 hover:shadow-2xl hover:shadow-amber-500/40 border-2 border-amber-600"

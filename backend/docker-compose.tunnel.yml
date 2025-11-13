@@ -1,0 +1,21 @@
+version: '3.8'
+
+# This extends the main docker-compose.yml to add Cloudflare Tunnel
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.tunnel.yml up -d
+
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: ilia-beer-tunnel
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    # Alternative: use config file
+    # volumes:
+    #   - ~/.cloudflared:/etc/cloudflared
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - ilia-beer-network
+

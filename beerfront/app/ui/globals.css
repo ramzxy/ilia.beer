@@ -146,15 +146,22 @@ html.lenis {
   html {
     scroll-snap-type: y mandatory;
     scroll-behavior: smooth;
+    scroll-padding-top: 0;
   }
   
   body {
     scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
   }
   
   .snap-start {
     scroll-snap-align: start;
-    scroll-snap-stop: normal;
+    scroll-snap-stop: always;
+  }
+  
+  /* Smooth scroll timing */
+  * {
+    scroll-behavior: smooth;
   }
 }
 

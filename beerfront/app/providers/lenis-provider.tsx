@@ -26,11 +26,11 @@ export default function LenisScrollProvider({
 
     // Desktop: Initialize Lenis for smooth scrolling
     const lenisInstance = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      duration: 2.0, // Slower scroll duration
+      easing: (t) => 1 - Math.pow(1 - t, 3), // Smoother cubic ease-out
       smoothWheel: true,
       smoothTouch: false, // Not needed on desktop
-      wheelMultiplier: 1,
+      wheelMultiplier: 0.7, // Slower wheel scrolling
       touchMultiplier: 0,
       touchInertiaMultiplier: 0,
       infinite: false,
