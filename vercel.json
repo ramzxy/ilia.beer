@@ -1,8 +1,7 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "installCommand": "npm install",
-  "framework": "nextjs",
-  "rootDirectory": "beerfront"
+  "buildCommand": "cd beerfront && npm install && npm run build",
+  "outputDirectory": "beerfront/.next",
+  "installCommand": "cd beerfront && npm install",
+  "framework": "nextjs"
 }
 

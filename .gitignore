@@ -1,13 +1,17 @@
 # Dependencies
 frontend/node_modules/
+beerfront/node_modules/
 backend/vendor/
 
 # Next.js
 frontend/.next/
 frontend/out/
+beerfront/.next/
+beerfront/out/
 
 # Production
 frontend/build/
+beerfront/build/
 
 # Misc
 .DS_Store

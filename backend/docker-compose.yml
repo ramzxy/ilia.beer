@@ -6,6 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: ilia-beer-backend
+    # Port exposed for local testing (cloudflared will use internal network)
     ports:
       - "8080:80"
     volumes:
