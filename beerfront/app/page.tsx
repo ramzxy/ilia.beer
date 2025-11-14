@@ -118,8 +118,10 @@ export default function Page() {
           (entries) => {
             entries.forEach((entry) => {
               if (entry.isIntersecting) {
-                // Load video if not already loaded (browser will cache it)
+                // Only load video when it's about to be visible (optimize bandwidth)
                 if (video.readyState === 0) {
+                  // Set preload to metadata when entering viewport for faster start
+                  video.preload = "metadata";
                   video.load();
                 }
                 // Reset and play video when it enters viewport
@@ -137,12 +139,14 @@ export default function Page() {
                 // Pause and reset video when it leaves viewport
                 video.pause();
                 video.currentTime = 0;
+                // Set preload back to none to save bandwidth
+                video.preload = "none";
               }
             });
           },
           {
             threshold: 0.2, // Play when 20% visible (earlier trigger)
-            rootMargin: "0px",
+            rootMargin: "50px", // Start loading 50px before entering viewport
           }
         );
 
@@ -273,6 +277,7 @@ export default function Page() {
                       playsInline
                       preload="none"
                       autoPlay={false}
+                      poster={videoThumbnails[index] || undefined}
                     />
                   </div>
 

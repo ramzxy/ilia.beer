@@ -87,18 +87,27 @@ class VideoController{
             }
             
             $caption = $input['caption'];
-            $fileName = uniqid() . '.mp4';
+            
+            // Determine file extension based on content type (default to mp4)
+            $fileExtension = isset($input['fileExtension']) ? $input['fileExtension'] : 'mp4';
+            $contentType = $fileExtension === 'webm' ? 'video/webm' : 'video/mp4';
+            
+            $fileName = uniqid() . '.' . $fileExtension;
             $gcsUrl = 'https://storage.googleapis.com/ilia_beer/' . $fileName;
 
             // Insert video metadata into database
             $videoId = $this->videoGateway->Insert($caption, $gcsUrl);
 
-            // Generate signed URL for upload
+            // Generate signed URL for upload with cache and compression headers
             $signedUrl = $this->bucket->object($fileName)->signedUrl(
                 new \DateTime('+10 minutes'),
                 [
                     'method' => 'PUT',
-                    'contentType' => 'video/mp4',
+                    'contentType' => $contentType,
+                    'headers' => [
+                        'Cache-Control' => 'public, max-age=31536000, immutable',
+                        'Content-Encoding' => 'identity', // Let GCS handle compression
+                    ],
                 ]
             );
 

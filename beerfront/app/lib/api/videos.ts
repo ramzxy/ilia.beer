@@ -8,6 +8,7 @@ export interface SignedUrlResponse {
 
 export interface CreateVideoPayload {
   caption: string;
+  fileExtension?: string; // 'mp4' or 'webm'
 }
 
 /**
@@ -43,32 +44,65 @@ export const videoService = {
    * Upload video file to Google Cloud Storage
    */
   async uploadToStorage(signedUrl: string, file: File): Promise<void> {
+    const contentType = file.type || (file.name.endsWith('.webm') ? 'video/webm' : 'video/mp4');
     await fetch(signedUrl, {
       method: "PUT",
       body: file,
       headers: {
-        "Content-Type": "video/mp4",
+        "Content-Type": contentType,
       },
     });
   },
 
   /**
    * Complete video upload process
-   * 1. Get signed URL from backend
-   * 2. Upload file to cloud storage
+   * 1. Compress video (optional, client-side)
+   * 2. Get signed URL from backend
+   * 3. Upload file to cloud storage
    */
   async upload(
     file: File,
     caption: string,
-    onProgress?: (progress: number) => void
+    onProgress?: (progress: number) => void,
+    compress: boolean = true
   ): Promise<SignedUrlResponse> {
-    // Step 1: Get signed URL
-    if (onProgress) onProgress(10);
-    const { signedUrl, fileName } = await this.getSignedUrl({ caption });
+    let fileToUpload = file;
+
+    // Step 0: Compress video if enabled
+    if (compress) {
+      try {
+        const { compressVideo } = await import("../video-compression");
+        fileToUpload = await compressVideo(
+          file,
+          {
+            maxWidth: 1920,
+            maxHeight: 1080,
+            maxBitrate: 2500, // 2.5 Mbps
+            quality: 0.8,
+          },
+          (compressionProgress) => {
+            // Map compression progress (0-100) to upload progress (0-40)
+            if (onProgress) onProgress(Math.floor(compressionProgress * 0.4));
+          }
+        );
+      } catch (error) {
+        console.warn("Compression failed, using original file:", error);
+      }
+    }
+    
+    if (onProgress) onProgress(40);
+
+    // Step 1: Get signed URL (pass file extension for proper content-type)
+    if (onProgress) onProgress(45);
+    const fileExtension = fileToUpload.name.split('.').pop()?.toLowerCase() || 'mp4';
+    const { signedUrl, fileName } = await this.getSignedUrl({ 
+      caption,
+      fileExtension: fileExtension === 'webm' ? 'webm' : 'mp4'
+    });
 
     // Step 2: Upload to storage
     if (onProgress) onProgress(50);
-    await this.uploadToStorage(signedUrl, file);
+    await this.uploadToStorage(signedUrl, fileToUpload);
 
     if (onProgress) onProgress(100);
     return { signedUrl, fileName };
