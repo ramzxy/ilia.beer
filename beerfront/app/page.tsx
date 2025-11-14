@@ -283,7 +283,7 @@ export default function Page() {
 
                   {/* Caption Section */}
                   <div className="px-2 space-y-1 mt-1 md:mt-0 max-w-lg md:max-w-none w-full">
-                    <p className="text-white text-base font-light leading-relaxed tracking-wide">
+                    <p className="text-white text-base font-light leading-relaxed tracking-wide whitespace-pre-wrap">
                       {video.caption || "Untitled Video"}
                     </p>
                     <time className="text-gray-600 text-xs block font-mono uppercase tracking-wider">

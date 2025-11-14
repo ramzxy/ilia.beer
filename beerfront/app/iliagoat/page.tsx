@@ -367,7 +367,7 @@ export default function UploadPage() {
                         <>
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex-1 space-y-2">
-                              <p className="text-white text-sm font-light leading-relaxed">
+                              <p className="text-white text-sm font-light leading-relaxed whitespace-pre-wrap">
                                 {video.caption || "Untitled Video"}
                               </p>
                               <div className="flex items-center gap-3 text-xs text-gray-500 font-light">
