@@ -27,9 +27,15 @@ if ! command -v git &> /dev/null; then
     exit 1
 fi
 
-# Check if docker-compose is available
-if ! command -v docker-compose &> /dev/null; then
+# Check if docker-compose or docker compose is available
+DOCKER_COMPOSE_CMD=""
+if command -v docker-compose &> /dev/null; then
+    DOCKER_COMPOSE_CMD="docker-compose"
+elif docker compose version &> /dev/null 2>&1; then
+    DOCKER_COMPOSE_CMD="docker compose"
+else
     echo -e "${RED}Error: docker-compose is not installed${NC}"
+    echo -e "${YELLOW}Please install Docker Compose (V1 or V2)${NC}"
     exit 1
 fi
 
@@ -55,6 +61,10 @@ print_warning() {
 print_info() {
     echo -e "${BLUE}ℹ${NC} $1"
 }
+
+# Show which docker compose command we're using
+echo -e "${BLUE}ℹ${NC} Using: $DOCKER_COMPOSE_CMD"
+echo ""
 
 # Step 1: Check for uncommitted changes
 echo -e "${BLUE}Step 1: Checking for uncommitted changes...${NC}"
@@ -106,7 +116,7 @@ echo ""
 
 # Step 4: Stop existing containers
 echo -e "${BLUE}Step 4: Stopping existing containers...${NC}"
-if docker-compose down; then
+if $DOCKER_COMPOSE_CMD down; then
     print_status "Containers stopped"
 else
     print_warning "Some containers may not have been running"
@@ -116,7 +126,7 @@ echo ""
 # Step 5: Rebuild containers (with no cache to ensure fresh build)
 echo -e "${BLUE}Step 5: Rebuilding containers...${NC}"
 print_info "This may take a few minutes..."
-if docker-compose build --no-cache backend; then
+if $DOCKER_COMPOSE_CMD build --no-cache backend; then
     print_status "Backend container rebuilt successfully"
 else
     print_error "Failed to rebuild backend container"
@@ -126,7 +136,7 @@ echo ""
 
 # Step 6: Start containers
 echo -e "${BLUE}Step 6: Starting containers...${NC}"
-if docker-compose up -d; then
+if $DOCKER_COMPOSE_CMD up -d; then
     print_status "Containers started"
 else
     print_error "Failed to start containers"
@@ -142,7 +152,7 @@ sleep 5
 MAX_WAIT=60
 WAITED=0
 while [ $WAITED -lt $MAX_WAIT ]; do
-    if docker-compose ps db | grep -q "healthy"; then
+    if $DOCKER_COMPOSE_CMD ps db | grep -q "healthy"; then
         print_status "Database is healthy"
         break
     fi
@@ -158,12 +168,12 @@ fi
 
 # Step 8: Show container status
 echo -e "${BLUE}Step 8: Container status:${NC}"
-docker-compose ps
+$DOCKER_COMPOSE_CMD ps
 echo ""
 
 # Step 9: Show logs (last 20 lines)
 echo -e "${BLUE}Step 9: Recent logs:${NC}"
-docker-compose logs --tail=20 backend
+$DOCKER_COMPOSE_CMD logs --tail=20 backend
 echo ""
 
 # Final status
@@ -172,6 +182,6 @@ echo -e "${GREEN}  Deployment completed successfully!${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
 print_info "Backend is running on port 8080"
-print_info "View logs: docker-compose logs -f backend"
-print_info "Stop services: docker-compose down"
+print_info "View logs: $DOCKER_COMPOSE_CMD logs -f backend"
+print_info "Stop services: $DOCKER_COMPOSE_CMD down"
 
