@@ -16,6 +16,20 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# Find git repository root (could be in parent directory)
+GIT_ROOT="$SCRIPT_DIR"
+while [ ! -d "$GIT_ROOT/.git" ] && [ "$GIT_ROOT" != "/" ]; do
+    GIT_ROOT="$(dirname "$GIT_ROOT")"
+done
+
+if [ ! -d "$GIT_ROOT/.git" ]; then
+    echo -e "${RED}Error: Not a git repository${NC}"
+    exit 1
+fi
+
+# Change to git root directory
+cd "$GIT_ROOT"
+
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}  ilia.beer Backend Deployment Script${NC}"
 echo -e "${BLUE}========================================${NC}"
@@ -39,11 +53,7 @@ else
     exit 1
 fi
 
-# Check if we're in a git repository
-if [ ! -d ".git" ]; then
-    echo -e "${RED}Error: Not a git repository${NC}"
-    exit 1
-fi
+# Git root already found and changed to above
 
 # Function to print status
 print_status() {
@@ -116,6 +126,7 @@ echo ""
 
 # Step 4: Stop existing containers
 echo -e "${BLUE}Step 4: Stopping existing containers...${NC}"
+cd "$SCRIPT_DIR"  # Change back to backend directory for docker-compose
 if $DOCKER_COMPOSE_CMD down; then
     print_status "Containers stopped"
 else
@@ -126,6 +137,7 @@ echo ""
 # Step 5: Rebuild containers (with no cache to ensure fresh build)
 echo -e "${BLUE}Step 5: Rebuilding containers...${NC}"
 print_info "This may take a few minutes..."
+cd "$SCRIPT_DIR"  # Ensure we're in backend directory
 if $DOCKER_COMPOSE_CMD build --no-cache backend; then
     print_status "Backend container rebuilt successfully"
 else
@@ -136,6 +148,7 @@ echo ""
 
 # Step 6: Start containers
 echo -e "${BLUE}Step 6: Starting containers...${NC}"
+cd "$SCRIPT_DIR"  # Ensure we're in backend directory
 if $DOCKER_COMPOSE_CMD up -d; then
     print_status "Containers started"
 else
@@ -147,6 +160,7 @@ echo ""
 # Step 7: Wait for services to be healthy
 echo -e "${BLUE}Step 7: Waiting for services to be ready...${NC}"
 print_info "Waiting for database to be healthy..."
+cd "$SCRIPT_DIR"  # Ensure we're in backend directory
 sleep 5
 
 MAX_WAIT=60
@@ -168,11 +182,13 @@ fi
 
 # Step 8: Show container status
 echo -e "${BLUE}Step 8: Container status:${NC}"
+cd "$SCRIPT_DIR"  # Ensure we're in backend directory
 $DOCKER_COMPOSE_CMD ps
 echo ""
 
 # Step 9: Show logs (last 20 lines)
 echo -e "${BLUE}Step 9: Recent logs:${NC}"
+cd "$SCRIPT_DIR"  # Ensure we're in backend directory
 $DOCKER_COMPOSE_CMD logs --tail=20 backend
 echo ""
 
