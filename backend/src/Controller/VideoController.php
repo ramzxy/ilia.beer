@@ -10,13 +10,17 @@ class VideoController{
     private $videoGateway = null;
     private $uri = null;
     private $bucket = null;
+    private $parent = null;
+    private $transcoder = null;
     
-    public function __construct($db, $requestMethod, $uri, $bucket = null){
+    public function __construct($db, $requestMethod, $uri, $bucket = null, $parent = null, $transcoder = null){
         $this->db = $db;
         $this->requestMethod = $requestMethod;
         $this->videoGateway = new VideoGateway($db);
         $this->uri = $uri;
         $this->bucket = $bucket;
+        $this->parent = $parent;
+        $this->transcoder = $transcoder;
     }
 
     public function processRequest(){
@@ -39,7 +43,7 @@ class VideoController{
                 break;
             case 'PUT':
                 if ($this->uri[2] === 'videos' && isset($this->uri[3])) {
-                    $response = $this->updateVideo($this->uri[3]);
+                    $response = $this->updateCaption($this->uri[3]);
                 } else {
                     $response['status_code_header'] = 'HTTP/1.1 404 Not Found';
                     $response['body'] = json_encode(['error' => 'Endpoint not found']);
@@ -125,7 +129,7 @@ class VideoController{
         }
     }
 
-    private function updateVideo($id)
+    private function updateCaption($id)
     {
         try {
             // Get request body
@@ -146,7 +150,7 @@ class VideoController{
             }
 
             // Update the caption
-            $rowsAffected = $this->videoGateway->Update($id, $input['caption']);
+            $rowsAffected = $this->videoGateway->Update($id, ['caption' => $input['caption']]);
 
             $response['status_code_header'] = 'HTTP/1.1 200 OK';
             $response['body'] = [
@@ -206,5 +210,50 @@ class VideoController{
             return $response;
         }
     }
+
+    private function transcode($id)
+    {
+        try {
+            $body = json_decode(file_get_contents('php://input'), true);
+
+            if (!isset($body['videoId'])) {
+                $response['status_code_header'] = 'HTTP/1.1 400 Bad Request';
+                $response['body'] = ['error' => 'VideoId is required'];
+                return $response;
+            }
+
+            $videoId = $body['videoId'];
+            $video = $this->videoGateway->GetById($videoId);
+            if (!$video) {
+                $response['status_code_header'] = 'HTTP/1.1 404 Not Found';
+                $response['body'] = ['error' => 'Video not found'];
+                return $response;
+            }
+
+            $outputUrl = 'https://storage.googleapis.com/ilia_beer/transcoded/' . basename($video['url']);
+
+            $job = $this->transcoder->CreateJob($this->parent, [
+                'inputUri' => $video['url'],
+                'outputUri' => $outputUrl,
+                'templateId' => 'preset/web-hd'
+            ]);
+
+            $jobName = $job->getName();
+
+            //update jobName and status
+            $rowsAffected = $this->videoGateway->Update($videoId, ['job' => $jobName, 'status' => 'transcoding']);
+
+            $response['status_code_header'] = 'HTTP/1.1 200 OK';
+            $response['body'] = [
+                'success' => true,
+                'message' => 'Video transcode started successfully',
+                'rowsAffected' => $rowsAffected
+            ];
+            return $response;
+        } catch (\Exception $e) {
+            $response['status_code_header'] = 'HTTP/1.1 500 Internal Server Error';
+            $response['body'] = ['error' => $e->getMessage()];
+            return $response;
+        }
 }
 

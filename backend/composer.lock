@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "232561e1cf71f9162dea957aab9cfa84",
+    "content-hash": "9e87ae69e16519234c7c1c3b228fb53a",
     "packages": [
         {
             "name": "brick/math",
@@ -259,16 +259,16 @@
         },
         {
             "name": "google/cloud-storage",
-            "version": "v1.48.6",
+            "version": "v1.48.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleapis/google-cloud-php-storage.git",
-                "reference": "5bf41093390ab08d3287a291e67f3768ca35e66d"
+                "reference": "cf0849344cd3ffa1ad3f2d0705635c667dadcbd9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/google-cloud-php-storage/zipball/5bf41093390ab08d3287a291e67f3768ca35e66d",
-                "reference": "5bf41093390ab08d3287a291e67f3768ca35e66d",
+                "url": "https://api.github.com/repos/googleapis/google-cloud-php-storage/zipball/cf0849344cd3ffa1ad3f2d0705635c667dadcbd9",
+                "reference": "cf0849344cd3ffa1ad3f2d0705635c667dadcbd9",
                 "shasum": ""
             },
             "require": {
@@ -310,9 +310,59 @@
             ],
             "description": "Cloud Storage Client for PHP",
             "support": {
-                "source": "https://github.com/googleapis/google-cloud-php-storage/tree/v1.48.6"
+                "source": "https://github.com/googleapis/google-cloud-php-storage/tree/v1.48.7"
             },
-            "time": "2025-10-27T23:48:29+00:00"
+            "time": "2025-11-14T22:26:16+00:00"
+        },
+        {
+            "name": "google/cloud-video-transcoder",
+            "version": "v1.3.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/googleapis/google-cloud-php-video-transcoder.git",
+                "reference": "41774aada5c8f68d85163d04a3614f6c852d97d6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/googleapis/google-cloud-php-video-transcoder/zipball/41774aada5c8f68d85163d04a3614f6c852d97d6",
+                "reference": "41774aada5c8f68d85163d04a3614f6c852d97d6",
+                "shasum": ""
+            },
+            "require": {
+                "google/gax": "^1.38.0",
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.0"
+            },
+            "suggest": {
+                "ext-grpc": "Enables use of gRPC, a universal high-performance RPC framework created by Google.",
+                "ext-protobuf": "Provides a significant increase in throughput over the pure PHP protobuf implementation. See https://cloud.google.com/php/grpc for installation instructions."
+            },
+            "type": "library",
+            "extra": {
+                "component": {
+                    "id": "cloud-video-transcoder",
+                    "path": "VideoTranscoder",
+                    "entry": null,
+                    "target": "googleapis/google-cloud-php-video-transcoder.git"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Google\\Cloud\\Video\\Transcoder\\": "src",
+                    "GPBMetadata\\Google\\Cloud\\Video\\Transcoder\\": "metadata"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "description": "Google Cloud Video Transcoder Client for PHP",
+            "support": {
+                "source": "https://github.com/googleapis/google-cloud-php-video-transcoder/tree/v1.3.1"
+            },
+            "time": "2025-10-07T18:41:09+00:00"
         },
         {
             "name": "google/common-protos",

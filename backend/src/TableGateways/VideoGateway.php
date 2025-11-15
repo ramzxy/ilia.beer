@@ -44,19 +44,29 @@ class VideoGateway {
         }
     }
 
-    public function Update($id, $caption) {
+    public function Update($id, array $data) {
+
+        if (empty($data)) {
+            return 0;
+        }
+
+        $setParts = [];
+        $params = ['id' => $id];
+
+        foreach ($data as $key => $value) {
+            $setParts[] = "$key = :$key";
+            $params[$key] = $value;
+        }
+        $setClause = implode(', ', $setParts);
+
         $query = "
-            UPDATE videos 
-            SET caption = :caption
-            WHERE id = :id
-        ";
+            UPDATE videos
+            SET $setClause
+            WHERE id = :id";
 
         try {
             $stmt = $this->db->prepare($query);
-            $stmt->execute([
-                'id' => $id,
-                'caption' => $caption
-            ]);
+            $stmt->execute($params);
             return $stmt->rowCount();
         } catch (\PDOException $e) {
             exit($e->getMessage());
@@ -92,5 +102,26 @@ class VideoGateway {
         } catch (\PDOException $e) {
             exit($e->getMessage());
         }
+    }
+
+    public function updateUrl($id, $url)
+    {
+        $query = "
+        UPDATE videos
+        SET url = :url
+        WHERE id = :id
+        ";
+
+        try {
+            $stmt = $this->db->prepare($query);
+            $stmt->execute([
+                'url' => $url,
+                'id' => $id
+            ]);
+            return $stmt->rowCount();
+        } catch (\PDOException $e) {
+            exit($e->getMessage());
+        }
+
     }
 }

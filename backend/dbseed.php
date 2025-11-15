@@ -7,6 +7,8 @@ $query = <<<EOS
         id INT AUTO_INCREMENT PRIMARY KEY,
         caption VARCHAR(255),
         url TEXT NOT NULL,
+        status ENUM('uploading', 'transcoding', 'failed', 'finished'),
+        job VARCHAR(255) DEFAULT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=INNODB;
 EOS;
