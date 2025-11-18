@@ -108,15 +108,13 @@ class VideoController{
 
             // Generate signed URL FIRST before inserting into database
             // This way if URL generation fails, we don't create orphaned database entries
+            // Note: Only include headers that will be sent with the request
+            // Cache-Control and other metadata can be set after upload via object metadata
             $signedUrl = $this->bucket->object($fileName)->signedUrl(
                 new \DateTime('+10 minutes'),
                 [
                     'method' => 'PUT',
                     'contentType' => $contentType,
-                    'headers' => [
-                        'Cache-Control' => 'public, max-age=31536000, immutable',
-                        'Content-Encoding' => 'identity', // Let GCS handle compression
-                    ],
                 ]
             );
 
