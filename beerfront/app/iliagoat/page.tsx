@@ -109,7 +109,7 @@ export default function UploadPage() {
     }
 
     setUploading(true);
-    setUploadStatus("Compressing video...");
+    setUploadStatus("Preparing upload...");
     setUploadProgress(0);
 
     try {
@@ -118,16 +118,15 @@ export default function UploadPage() {
         caption.trim(),
         (progress) => {
           setUploadProgress(progress);
-          if (progress < 40) {
-            setUploadStatus("Compressing video...");
-          } else if (progress < 50) {
+          if (progress < 20) {
             setUploadStatus("Creating video entry...");
-          } else if (progress >= 50 && progress < 100) {
-            const uploadPercent = Math.floor(((progress - 50) / 50) * 100);
+          } else if (progress >= 20 && progress < 100) {
+            const uploadPercent = Math.floor(((progress - 20) / 80) * 100);
             setUploadStatus(`Uploading ${file.name}... ${uploadPercent}%`);
+          } else {
+            setUploadStatus("Upload complete!");
           }
-        },
-        true // Enable compression
+        }
       );
 
       setUploadStatus(`Upload successful! File: ${fileName}`);
