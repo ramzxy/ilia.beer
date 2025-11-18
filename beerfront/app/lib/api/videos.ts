@@ -4,6 +4,7 @@ import type { Video } from "../definitions";
 export interface SignedUrlResponse {
   signedUrl: string;
   fileName: string;
+  contentType: string;
 }
 
 export interface CreateVideoPayload {
@@ -47,10 +48,9 @@ export const videoService = {
 
   /**
    * Upload video file to Google Cloud Storage
+   * Must use the exact contentType that was used to sign the URL
    */
-  async uploadToStorage(signedUrl: string, file: File, onProgress?: (progress: number) => void): Promise<void> {
-    const contentType = file.type || (file.name.endsWith('.webm') ? 'video/webm' : 'video/mp4');
-    
+  async uploadToStorage(signedUrl: string, file: File, contentType: string, onProgress?: (progress: number) => void): Promise<void> {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       
@@ -99,16 +99,17 @@ export const videoService = {
     // Step 1: Get signed URL (pass file extension for proper content-type)
     if (onProgress) onProgress(10);
     const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'mp4';
-    const { signedUrl, fileName } = await this.getSignedUrl({ 
+    const { signedUrl, fileName, contentType } = await this.getSignedUrl({ 
       caption,
       fileExtension: fileExtension === 'webm' ? 'webm' : 'mp4'
     });
 
-    // Step 2: Upload to storage (progress will be tracked internally)
-    await this.uploadToStorage(signedUrl, file, onProgress);
+    // Step 2: Upload to storage using the exact contentType from backend
+    // This ensures the signature matches what GCS expects
+    await this.uploadToStorage(signedUrl, file, contentType, onProgress);
 
     if (onProgress) onProgress(100);
-    return { signedUrl, fileName };
+    return { signedUrl, fileName, contentType };
   },
 
   /**

@@ -127,7 +127,8 @@ class VideoController{
             $response['body'] = [
                 'signedUrl' => $signedUrl,
                 'fileName' => $fileName,
-                'videoId' => $videoId
+                'videoId' => $videoId,
+                'contentType' => $contentType
             ];
             return $response;
         } catch (\Exception $e) {
