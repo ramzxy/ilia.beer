@@ -235,8 +235,8 @@ export default function Page() {
       >
         <div className="max-w-2xl mx-auto space-y-8">
           <motion.h1 
-            className="text-5xl md:text-7xl font-light text-white tracking-wide" 
-            style={{ fontFamily: "NightyDemo, sans-serif" }}
+            className="text-5xl md:text-7xl font-normal text-white tracking-wide" 
+            style={{ fontFamily: "Pacifico, cursive" }}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
