@@ -204,30 +204,30 @@ html {
   scroll-padding-top: 0;
 }
 
-/* Mobile: Native CSS scroll-snap (Lenis disabled) */
+/* Mobile: Instagram-style scroll-snap */
 @media (max-width: 767px) {
   html {
-    scroll-snap-type: y proximity;
-    scroll-behavior: smooth;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: auto;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: none;
+    overscroll-behavior-y: contain;
   }
   
   body {
-    scroll-snap-type: y proximity;
-    scroll-behavior: smooth;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: auto;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: none;
+    overscroll-behavior-y: contain;
   }
   
   .snap-start {
     scroll-snap-align: start;
-    scroll-snap-stop: normal;
+    scroll-snap-stop: always;
   }
   
-  /* Smooth scroll timing for mobile */
-  html {
-    scroll-behavior: smooth;
+  /* Instant snap for Instagram-like feel */
+  * {
+    scroll-behavior: auto !important;
   }
 }
 
