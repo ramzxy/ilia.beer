@@ -37,3 +37,4 @@ backend/GCS.json
 # OS
 Thumbs.db
 
+.cursor/
