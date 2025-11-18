@@ -255,5 +255,6 @@ class VideoController{
             $response['body'] = ['error' => $e->getMessage()];
             return $response;
         }
-}
+    }
 
+}
