@@ -48,14 +48,41 @@ export const videoService = {
   /**
    * Upload video file to Google Cloud Storage
    */
-  async uploadToStorage(signedUrl: string, file: File): Promise<void> {
+  async uploadToStorage(signedUrl: string, file: File, onProgress?: (progress: number) => void): Promise<void> {
     const contentType = file.type || (file.name.endsWith('.webm') ? 'video/webm' : 'video/mp4');
-    await fetch(signedUrl, {
-      method: "PUT",
-      body: file,
-      headers: {
-        "Content-Type": contentType,
-      },
+    
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      
+      // Track upload progress
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable && onProgress) {
+          const percentComplete = Math.floor((e.loaded / e.total) * 100);
+          // Map to 20-100% range (since we're already at 20% when this starts)
+          const mappedProgress = 20 + Math.floor((percentComplete / 100) * 80);
+          onProgress(mappedProgress);
+        }
+      });
+      
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve();
+        } else {
+          reject(new Error(`Upload failed with status ${xhr.status}: ${xhr.statusText}`));
+        }
+      });
+      
+      xhr.addEventListener('error', () => {
+        reject(new Error('Network error during upload'));
+      });
+      
+      xhr.addEventListener('abort', () => {
+        reject(new Error('Upload was aborted'));
+      });
+      
+      xhr.open('PUT', signedUrl);
+      xhr.setRequestHeader('Content-Type', contentType);
+      xhr.send(file);
     });
   },
 
@@ -77,9 +104,8 @@ export const videoService = {
       fileExtension: fileExtension === 'webm' ? 'webm' : 'mp4'
     });
 
-    // Step 2: Upload to storage
-    if (onProgress) onProgress(20);
-    await this.uploadToStorage(signedUrl, file);
+    // Step 2: Upload to storage (progress will be tracked internally)
+    await this.uploadToStorage(signedUrl, file, onProgress);
 
     if (onProgress) onProgress(100);
     return { signedUrl, fileName };
