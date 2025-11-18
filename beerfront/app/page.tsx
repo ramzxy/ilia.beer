@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import type { Video } from "./lib/definitions";
 import { videoService } from "./lib/api/videos";
 import MeshGradientBackground from "@/components/ui/mesh-gradient-background";
@@ -15,21 +15,56 @@ export default function Page() {
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const thumbnailRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const processedThumbnails = useRef<Set<number>>(new Set());
+  const nextVideoToDownload = useRef<number>(0);
+  const downloadingVideos = useRef<Set<number>>(new Set());
+  const startDownloadingNextVideoRef = useRef<(() => void) | null>(null);
 
   const handleVideoClick = (index: number) => {
     const video = videoRefs.current[index];
     if (video) {
-      if (video.muted) {
-        video.muted = false;
+      // Toggle mute/unmute
+      video.muted = !video.muted;
+      if (!video.muted) {
+        // If unmuting, try to play
         video.play().catch(() => {
           // If play fails, keep muted
           video.muted = true;
         });
-      } else {
-        video.muted = true;
       }
     }
   };
+
+  const startDownloadingNextVideo = useCallback(() => {
+    const currentIndex = nextVideoToDownload.current;
+    
+    // Check if there are more videos to download
+    if (currentIndex >= videos.length) {
+      return;
+    }
+
+    const video = videoRefs.current[currentIndex];
+    if (!video) {
+      return;
+    }
+
+    // Skip if already downloading or already loaded
+    if (downloadingVideos.current.has(currentIndex) || video.readyState >= 3) {
+      // Move to next video
+      nextVideoToDownload.current = currentIndex + 1;
+      if (startDownloadingNextVideoRef.current) {
+        startDownloadingNextVideoRef.current();
+      }
+      return;
+    }
+
+    // Start downloading this video
+    downloadingVideos.current.add(currentIndex);
+    video.preload = "auto";
+    video.load();
+  }, [videos.length]);
+
+  // Store the function in a ref so it can be called recursively
+  startDownloadingNextVideoRef.current = startDownloadingNextVideo;
 
   useEffect(() => {
     async function loadVideos() {
@@ -43,6 +78,10 @@ export default function Page() {
           initialLoadingStates[index] = true;
         });
         setVideoLoadingStates(initialLoadingStates);
+        
+        // Reset download tracking
+        nextVideoToDownload.current = 0;
+        downloadingVideos.current.clear();
       } catch (error) {
         console.error("Failed to load videos:", error);
       } finally {
@@ -98,6 +137,17 @@ export default function Page() {
     });
   }, [videos]);
 
+  // Start downloading the first video when videos are loaded
+  useEffect(() => {
+    if (videos.length > 0 && !loading) {
+      // Wait a bit for refs to be set
+      const timer = setTimeout(() => {
+        startDownloadingNextVideo();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [videos, loading, startDownloadingNextVideo]);
+
   useEffect(() => {
     const observers = videoRefs.current
       .filter((video) => video !== null)
@@ -105,6 +155,15 @@ export default function Page() {
         // Set up loading event listeners
         const handleCanPlay = () => {
           setVideoLoadingStates((prev) => ({ ...prev, [index]: false }));
+          
+          // When this video finishes downloading, start downloading the next one
+          if (downloadingVideos.current.has(index)) {
+            downloadingVideos.current.delete(index);
+            nextVideoToDownload.current = index + 1;
+            if (startDownloadingNextVideoRef.current) {
+              startDownloadingNextVideoRef.current();
+            }
+          }
         };
         
         const handleLoadStart = () => {
@@ -118,13 +177,8 @@ export default function Page() {
           (entries) => {
             entries.forEach((entry) => {
               if (entry.isIntersecting) {
-                // Only load video when it's about to be visible (optimize bandwidth)
-                if (video.readyState === 0) {
-                  // Set preload to metadata when entering viewport for faster start
-                  video.preload = "metadata";
-                  video.load();
-                }
                 // Reset and play video when it enters viewport
+                // Video should already be downloaded sequentially
                 video.currentTime = 0;
                 video
                   .play()
@@ -139,8 +193,6 @@ export default function Page() {
                 // Pause and reset video when it leaves viewport
                 video.pause();
                 video.currentTime = 0;
-                // Set preload back to none to save bandwidth
-                video.preload = "none";
               }
             });
           },
@@ -273,7 +325,6 @@ export default function Page() {
                       src={video.url}
                       className={`w-full h-full object-cover ${videoLoadingStates[index] ? "opacity-0" : "opacity-100"} transition-opacity duration-300`}
                       loop
-                      muted
                       playsInline
                       preload="none"
                       autoPlay={false}
