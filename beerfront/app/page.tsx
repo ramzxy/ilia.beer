@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { motion } from "framer-motion";
 import type { Video } from "./lib/definitions";
 import { videoService } from "./lib/api/videos";
 import MeshGradientBackground from "@/components/ui/mesh-gradient-background";
 import BuyMeBeerButton from "@/components/ui/buy-me-beer-button";
 import ScrollToTopButton from "@/components/ui/scroll-to-top-button";
+import VideoCard from "@/components/ui/video-card";
+import SkeletonLoader from "@/components/ui/skeleton-loader";
 
 export default function Page() {
   const [videos, setVideos] = useState<Video[]>([]);
@@ -224,135 +227,107 @@ export default function Page() {
 
 
       {/* Hero Section */}
-      <section className="relative z-10 min-h-screen snap-start md:snap-align-none flex flex-col items-center justify-center px-4 text-center">
-          <div className="max-w-2xl mx-auto space-y-8">
-            <h1 className="text-5xl md:text-7xl font-light text-white tracking-wide" style={{ fontFamily: "NightyDemo, sans-serif" }}>
-              Buy me a beer!
-            </h1>
-            <p className="text-lg md:text-xl text-gray-400 font-light leading-relaxed max-w-lg mx-auto">
-              Order a beer and write a message for me.
+      <motion.section 
+        className="relative z-10 min-h-screen snap-start md:snap-align-none flex flex-col items-center justify-center px-4 text-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+      >
+        <div className="max-w-2xl mx-auto space-y-8">
+          <motion.h1 
+            className="text-5xl md:text-7xl font-light text-white tracking-wide" 
+            style={{ fontFamily: "NightyDemo, sans-serif" }}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            Buy me a beer!
+          </motion.h1>
+          <motion.p 
+            className="text-lg md:text-xl text-gray-400 font-light leading-relaxed max-w-lg mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            Order a beer and write a message for me.
+          </motion.p>
+          <div className="pt-4">
+            <BuyMeBeerButton />
+          </div>
+          <motion.div 
+            className="pt-10 space-y-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+          >
+            <p className="text-gray-500 text-sm font-light tracking-wide">
+              See other submissions
             </p>
-            <div className="pt-4">
-              <BuyMeBeerButton />
-            </div>
-            <div className="pt-10 space-y-4">
-              <p className="text-gray-500 text-sm font-light tracking-wide">
-                See other submissions
-              </p>
-              <div className="animate-bounce">
-                <svg
-                  width="52"
-                  height="52"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-gray-600 mx-auto"
-                >
-                  <path d="M12 5v14M19 12l-7 7-7-7" />
-                </svg>
-              </div>
-            </div>
+            <motion.div 
+              className="animate-bounce"
+              animate={{ y: [0, 10, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <svg
+                width="52"
+                height="52"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-gray-600 mx-auto"
+              >
+                <path d="M12 5v14M19 12l-7 7-7-7" />
+              </svg>
+            </motion.div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Video Feed */}
       <main className="relative z-10 md:max-w-xl md:mx-auto md:px-4 md:py-8 md:space-y-12">
         {loading ? (
           <div className="min-h-screen snap-start flex items-center justify-center md:py-20">
-            <div className="flex flex-col items-center gap-4">
-              <div className="w-12 h-12 border-4 border-gray-700 border-t-white rounded-full animate-spin"></div>
-              <p className="text-gray-500 text-base font-light tracking-wide">
-                Loading videos...
-              </p>
+            <div className="flex flex-col items-center gap-6 max-w-lg w-full px-4">
+              <SkeletonLoader variant="video" />
+              <div className="w-full space-y-2">
+                <SkeletonLoader variant="text" className="w-3/4" />
+                <SkeletonLoader variant="text" className="w-1/2" />
+              </div>
             </div>
           </div>
         ) : videos.length > 0 ? (
           <>
             {videos.map((video, index) => (
-              <article
+              <VideoCard
                 key={video.id}
-                className="min-h-screen snap-start md:snap-align-none md:min-h-0 flex flex-col justify-center items-center px-4 md:block md:space-y-3"
-              >
-                  {/* Video Container */}
-                  <div 
-                    className="relative w-full aspect-square max-w-lg md:max-w-none bg-black rounded-3xl overflow-hidden border border-gray-800 md:hover:border-gray-700 transition-all md:hover:shadow-2xl md:hover:shadow-gray-900/50 cursor-pointer"
-                    onClick={() => handleVideoClick(index)}
-                  >
-                    {/* Blurred Thumbnail Background */}
-                    {videoLoadingStates[index] && videoThumbnails[index] && (
-                      <div 
-                        className="absolute inset-0 z-0"
-                        style={{
-                          backgroundImage: `url(${videoThumbnails[index]})`,
-                          backgroundSize: "cover",
-                          backgroundPosition: "center",
-                          filter: "blur(20px)",
-                          transform: "scale(1.1)",
-                        }}
-                      />
-                    )}
-                    
-                    {/* Loading Placeholder */}
-                    {videoLoadingStates[index] && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-gray-900/30 z-10">
-                        <div className="flex flex-col items-center gap-3">
-                          <div className="w-10 h-10 border-2 border-gray-600 border-t-white rounded-full animate-spin"></div>
-                          <p className="text-gray-500 text-xs font-light">Loading video...</p>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* Hidden video for thumbnail generation */}
-                    <video
-                      ref={(el) => {
-                        thumbnailRefs.current[index] = el;
-                      }}
-                      src={video.url}
-                      className="hidden"
-                      preload="metadata"
-                      muted
-                      playsInline
-                    />
-                    
-                    {/* Main video */}
-                    <video
-                      ref={(el) => {
-                        videoRefs.current[index] = el;
-                      }}
-                      src={video.url}
-                      className={`w-full h-full object-cover ${videoLoadingStates[index] ? "opacity-0" : "opacity-100"} transition-opacity duration-300`}
-                      loop
-                      playsInline
-                      preload="none"
-                      autoPlay={false}
-                      poster={videoThumbnails[index] || undefined}
-                    />
-                  </div>
-
-                  {/* Caption Section */}
-                  <div className="px-2 space-y-1 mt-1 md:mt-0 max-w-lg md:max-w-none w-full">
-                    <p className="text-white text-base font-light leading-relaxed tracking-wide whitespace-pre-wrap">
-                      {video.caption || "Untitled Video"}
-                    </p>
-                    <time className="text-gray-600 text-xs block font-mono uppercase tracking-wider">
-                      {new Date(video.created_at).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </time>
-                  </div>
-                </article>
+                video={video}
+                index={index}
+                videoRef={(el) => {
+                  videoRefs.current[index] = el;
+                }}
+                thumbnailRef={(el) => {
+                  thumbnailRefs.current[index] = el;
+                }}
+                isLoading={videoLoadingStates[index]}
+                thumbnail={videoThumbnails[index]}
+                onVideoClick={() => handleVideoClick(index)}
+              />
             ))}
             {/* End of content message */}
-            <section className="min-h-screen snap-start md:snap-align-none md:min-h-0 flex items-center justify-center px-4 py-20">
+            <motion.section 
+              className="min-h-screen snap-start md:snap-align-none md:min-h-0 flex items-center justify-center px-4 py-20"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
               <p className="text-gray-500 text-base font-light tracking-wide">
                 You&apos;ve seen it all
               </p>
-            </section>
+            </motion.section>
           </>
         ) : (
           <div className="min-h-screen snap-start flex items-center justify-center md:py-20">
