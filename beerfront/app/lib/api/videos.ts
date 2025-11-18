@@ -22,7 +22,12 @@ export const videoService = {
   async getAll(): Promise<Video[]> {
     try {
       const response = await apiClient.get<Video[]>("/api/videos");
-      return response.data;
+      // Ensure response.data is always an array
+      if (Array.isArray(response.data)) {
+        return response.data;
+      }
+      console.warn("API returned non-array response:", response.data);
+      return [];
     } catch (error) {
       console.error("Failed to fetch videos:", error);
       return [];
@@ -122,4 +127,17 @@ export const videoService = {
     await apiClient.delete(`/api/videos/${id}`);
   },
 };
+
+/**
+ * Get total beers/supporters count from Buy Me a Coffee
+ */
+export async function getBeerCount(): Promise<number> {
+  try {
+    const response = await apiClient.get<{ count: number }>("/api/beers");
+    return response.data.count;
+  } catch (error) {
+    console.error("Failed to fetch beer count:", error);
+    return 0;
+  }
+}
 
