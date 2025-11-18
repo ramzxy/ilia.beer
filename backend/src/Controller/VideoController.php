@@ -81,6 +81,13 @@ class VideoController{
     private function createVideoUpload()
     {
         try {
+            // Check if bucket is available
+            if (!$this->bucket) {
+                $response['status_code_header'] = 'HTTP/1.1 500 Internal Server Error';
+                $response['body'] = ['error' => 'Storage bucket not configured'];
+                return $response;
+            }
+
             // Get request body
             $input = json_decode(file_get_contents('php://input'), true);
             
@@ -99,10 +106,8 @@ class VideoController{
             $fileName = uniqid() . '.' . $fileExtension;
             $gcsUrl = 'https://storage.googleapis.com/ilia_beer/' . $fileName;
 
-            // Insert video metadata into database
-            $videoId = $this->videoGateway->Insert($caption, $gcsUrl);
-
-            // Generate signed URL for upload with cache and compression headers
+            // Generate signed URL FIRST before inserting into database
+            // This way if URL generation fails, we don't create orphaned database entries
             $signedUrl = $this->bucket->object($fileName)->signedUrl(
                 new \DateTime('+10 minutes'),
                 [
@@ -114,6 +119,9 @@ class VideoController{
                     ],
                 ]
             );
+
+            // Insert video metadata into database AFTER signed URL is created successfully
+            $videoId = $this->videoGateway->Insert($caption, $gcsUrl);
 
             $response['status_code_header'] = 'HTTP/1.1 200 OK';
             $response['body'] = [
