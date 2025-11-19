@@ -17,7 +17,7 @@ services:
       - /home/ilia/.cloudflared:/etc/cloudflared:ro
     restart: unless-stopped
     depends_on:
-      - backend
+      - nginx
     networks:
       - ilia-beer-network
 
