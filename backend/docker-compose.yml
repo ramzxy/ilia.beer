@@ -6,11 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: ilia-beer-backend
-    # Port exposed for local testing (cloudflared will use internal network)
-    ports:
-      - "8080:80"
     volumes:
-      # Mount .env and GCS.json for configuration
       - ./.env:/var/www/html/.env:ro
       - ./GCS.json:/var/www/html/GCS.json:ro
     environment:
@@ -22,6 +18,20 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - ilia-beer-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: ilia-beer-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./public:/var/www/html/public:ro
+    depends_on:
+      - backend
     restart: unless-stopped
     networks:
       - ilia-beer-network
