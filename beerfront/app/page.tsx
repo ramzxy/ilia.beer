@@ -219,7 +219,7 @@ export default function Page() {
   }, [videos]);
 
   return (
-    <div className="bg-black">
+    <div className="bg-[#0d0906]">
       {/* Mesh Gradient Background */}
       <div className="fixed inset-0 z-0">
         <MeshGradientBackground />
@@ -231,53 +231,85 @@ export default function Page() {
         className="relative z-10 min-h-screen snap-start md:snap-align-none flex flex-col items-center justify-center px-4 text-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
+        transition={{ duration: 1 }}
       >
-        <div className="max-w-2xl mx-auto space-y-8">
+        <div className="max-w-2xl mx-auto space-y-6">
+          {/* Main Heading */}
           <motion.h1 
-            className="text-5xl md:text-7xl font-normal text-white tracking-wide" 
-            style={{ fontFamily: "Pacifico, cursive" }}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-5xl md:text-8xl font-normal tracking-wide" 
+            style={{ 
+              fontFamily: "Pacifico, cursive",
+              color: "#f5efe6",
+              textShadow: "0 2px 20px rgba(199, 127, 50, 0.3), 0 4px 40px rgba(0, 0, 0, 0.5)"
+            }}
+            initial={{ opacity: 0, y: 40, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
           >
             Buy me a beer!
           </motion.h1>
+          
+          {/* Decorative divider */}
+          <motion.div
+            className="flex items-center justify-center gap-4 py-2"
+            initial={{ opacity: 0, scaleX: 0 }}
+            animate={{ opacity: 1, scaleX: 1 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+          >
+            <div className="h-px w-16 bg-gradient-to-r from-transparent to-amber-700/40" />
+            <div className="w-2 h-2 rounded-full bg-amber-600/60" />
+            <div className="h-px w-16 bg-gradient-to-l from-transparent to-amber-700/40" />
+          </motion.div>
+          
+          {/* Tagline */}
           <motion.p 
-            className="text-lg md:text-xl text-gray-400 font-light leading-relaxed max-w-lg mx-auto"
+            className="text-lg md:text-xl font-light leading-relaxed max-w-md mx-auto"
+            style={{ color: "rgba(200, 180, 160, 0.85)" }}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
           >
             Order a beer and write a message for me.
           </motion.p>
-          <div className="pt-4">
-            <BuyMeBeerButton />
-          </div>
+          
+          {/* CTA Button */}
           <motion.div 
-            className="pt-10 space-y-4"
+            className="pt-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
+          >
+            <BuyMeBeerButton />
+          </motion.div>
+          
+          {/* Scroll indicator */}
+          <motion.div 
+            className="pt-16 space-y-3"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
+            transition={{ duration: 0.8, delay: 1.2 }}
           >
-            <p className="text-gray-500 text-sm font-light tracking-wide">
+            <p 
+              className="text-sm font-light tracking-widest uppercase"
+              style={{ color: "rgba(160, 140, 120, 0.6)" }}
+            >
               See other submissions
             </p>
             <motion.div 
-              className="animate-bounce"
-              animate={{ y: [0, 10, 0] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              animate={{ y: [0, 8, 0] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
             >
               <svg
-                width="52"
-                height="52"
+                width="40"
+                height="40"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="2"
+                strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="text-gray-600 mx-auto"
+                style={{ color: "rgba(199, 127, 50, 0.5)" }}
+                className="mx-auto"
               >
                 <path d="M12 5v14M19 12l-7 7-7-7" />
               </svg>

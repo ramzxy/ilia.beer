@@ -99,17 +99,12 @@ class VideoController{
             
             $caption = $input['caption'];
             
-            // Determine file extension based on content type (default to mp4)
             $fileExtension = isset($input['fileExtension']) ? $input['fileExtension'] : 'mp4';
             $contentType = $fileExtension === 'webm' ? 'video/webm' : 'video/mp4';
             
             $fileName = uniqid() . '.' . $fileExtension;
             $gcsUrl = 'https://storage.googleapis.com/ilia_beer/' . $fileName;
 
-            // Generate signed URL FIRST before inserting into database
-            // This way if URL generation fails, we don't create orphaned database entries
-            // Note: Only include headers that will be sent with the request
-            // Cache-Control and other metadata can be set after upload via object metadata
             $signedUrl = $this->bucket->object($fileName)->signedUrl(
                 new \DateTime('+10 minutes'),
                 [
@@ -118,7 +113,6 @@ class VideoController{
                 ]
             );
 
-            // Insert video metadata into database AFTER signed URL is created successfully
             $videoId = $this->videoGateway->Insert($caption, $gcsUrl);
 
             $response['status_code_header'] = 'HTTP/1.1 200 OK';
