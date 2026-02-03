@@ -1,6 +1,7 @@
 <?php
 $bootstrap = require "../bootstrap.php";
 use Ilia\Backend\Controller\VideoController;
+use Ilia\Backend\Controller\BeerController;
 
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
@@ -24,5 +25,11 @@ if ($uri[1] !== 'api') {
 
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 
-$controller = new VideoController($bootstrap['db'], $requestMethod, $uri, $bootstrap['bucket']);
-$controller->processRequest();
+// Route to appropriate controller
+if (isset($uri[2]) && $uri[2] === 'beers') {
+    $controller = new BeerController($requestMethod);
+    $controller->processRequest();
+} else {
+    $controller = new VideoController($bootstrap['db'], $requestMethod, $uri, $bootstrap['bucket']);
+    $controller->processRequest();
+}

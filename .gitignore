@@ -38,3 +38,4 @@ backend/GCS.json
 Thumbs.db
 
 .cursor/
+.claude/

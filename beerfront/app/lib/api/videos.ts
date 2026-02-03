@@ -128,15 +128,33 @@ export const videoService = {
 };
 
 /**
- * Get total beers/supporters count from Buy Me a Coffee
+ * Beer count service
  */
-export async function getBeerCount(): Promise<number> {
-  try {
-    const response = await apiClient.get<{ count: number }>("/api/beers");
-    return response.data.count;
-  } catch (error) {
-    console.error("Failed to fetch beer count:", error);
-    return 0;
-  }
+export interface BeerCountData {
+  liters: number;
+  updated_at: string;
 }
+
+export const beerService = {
+  /**
+   * Get current beer count in liters
+   */
+  async getCount(): Promise<BeerCountData> {
+    try {
+      const response = await apiClient.get<BeerCountData>("/api/beers");
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch beer count:", error);
+      return { liters: 0, updated_at: new Date().toISOString() };
+    }
+  },
+
+  /**
+   * Update beer count (admin only)
+   */
+  async updateCount(liters: number): Promise<BeerCountData> {
+    const response = await apiClient.put<BeerCountData>("/api/beers", { liters });
+    return response.data;
+  }
+};
 

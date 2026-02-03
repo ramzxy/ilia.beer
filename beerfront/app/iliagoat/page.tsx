@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { videoService } from "../lib/api/videos";
+import { useState, useEffect } from "react";
+import { videoService, beerService } from "../lib/api/videos";
 import type { Video } from "../lib/definitions";
 import MeshGradientBackground from "@/components/ui/mesh-gradient-background";
 import Link from "next/link";
@@ -22,12 +22,53 @@ export default function UploadPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editCaption, setEditCaption] = useState("");
 
+  // Beer count state
+  const [beerLiters, setBeerLiters] = useState<number>(0);
+  const [beerInput, setBeerInput] = useState<string>("0");
+  const [savingBeer, setSavingBeer] = useState(false);
+  const [beerStatus, setBeerStatus] = useState<string>("");
+
+  const loadBeerCount = async () => {
+    try {
+      const data = await beerService.getCount();
+      setBeerLiters(data.liters);
+      setBeerInput(data.liters.toString());
+    } catch (error) {
+      console.error("Failed to load beer count:", error);
+    }
+  };
+
+  const handleSaveBeerCount = async () => {
+    const liters = parseFloat(beerInput);
+    if (isNaN(liters) || liters < 0) {
+      setBeerStatus("Please enter a valid number");
+      return;
+    }
+
+    setSavingBeer(true);
+    setBeerStatus("");
+
+    try {
+      const data = await beerService.updateCount(liters);
+      setBeerLiters(data.liters);
+      setBeerInput(data.liters.toString());
+      setBeerStatus("Beer count updated!");
+      setTimeout(() => setBeerStatus(""), 3000);
+    } catch (error) {
+      console.error("Failed to update beer count:", error);
+      setBeerStatus("Failed to update beer count");
+    } finally {
+      setSavingBeer(false);
+    }
+  };
+
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (password === UPLOAD_PASSWORD) {
       setIsAuthenticated(true);
       setPasswordError("");
       loadVideos();
+      loadBeerCount();
     } else {
       setPasswordError("Incorrect password");
       setPassword("");
@@ -219,6 +260,89 @@ export default function UploadPage() {
             </div>
           ) : (
             <div className="space-y-6">
+            {/* Beer Counter Card */}
+            <div className="bg-black/40 backdrop-blur-sm border border-amber-900/30 rounded-3xl p-6 md:p-8 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-amber-900/30 flex items-center justify-center">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-amber-500"
+                  >
+                    <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
+                    <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
+                    <line x1="6" y1="1" x2="6" y2="4" />
+                    <line x1="10" y1="1" x2="10" y2="4" />
+                    <line x1="14" y1="1" x2="14" y2="4" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-xl font-light text-white tracking-wide">
+                    Beer Tracker
+                  </h2>
+                  <p className="text-sm text-gray-500">Goal: 100 liters</p>
+                </div>
+              </div>
+
+              <div className="flex items-end gap-3">
+                <div className="flex-1">
+                  <label
+                    htmlFor="beer-input"
+                    className="block text-sm font-light text-gray-400 mb-2 tracking-wide"
+                  >
+                    Liters Donated
+                  </label>
+                  <input
+                    id="beer-input"
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="10000"
+                    value={beerInput}
+                    onChange={(e) => setBeerInput(e.target.value)}
+                    disabled={savingBeer}
+                    className="block w-full px-4 py-3 bg-black/50 border border-gray-800 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-700 focus:border-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-light text-2xl"
+                  />
+                </div>
+                <button
+                  onClick={handleSaveBeerCount}
+                  disabled={savingBeer || beerInput === beerLiters.toString()}
+                  className="px-6 py-3 bg-amber-700 hover:bg-amber-600 text-white rounded-xl font-light text-base focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed transition-all tracking-wide"
+                >
+                  {savingBeer ? "Saving..." : "Update"}
+                </button>
+              </div>
+
+              {/* Progress bar */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">{beerLiters.toFixed(1)}L</span>
+                  <span className="text-gray-500">{((beerLiters / 100) * 100).toFixed(0)}%</span>
+                </div>
+                <div className="h-2 bg-gray-900 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${Math.min((beerLiters / 100) * 100, 100)}%`,
+                      background: "linear-gradient(90deg, #c77f32, #e5a84b)"
+                    }}
+                  />
+                </div>
+              </div>
+
+              {beerStatus && (
+                <p className={`text-sm font-light ${beerStatus.includes("Failed") ? "text-red-400" : "text-green-400"}`}>
+                  {beerStatus}
+                </p>
+              )}
+            </div>
+
             {/* Upload Form Card */}
             <div className="bg-black/40 backdrop-blur-sm border border-gray-800 rounded-3xl p-6 md:p-8 space-y-6">
             {/* Caption Input */}
