@@ -239,22 +239,6 @@ export default function VideoGallery({ videos, loading }: VideoGalleryProps) {
         ))}
       </div>
 
-      {/* End message */}
-      {videos.length > 0 && (
-        <motion.div
-          className="text-center py-16"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-        >
-          <p
-            className="text-sm tracking-widest uppercase"
-            style={{ color: "rgba(160, 140, 120, 0.4)" }}
-          >
-            You&apos;ve seen them all
-          </p>
-        </motion.div>
-      )}
     </>
   );
 }

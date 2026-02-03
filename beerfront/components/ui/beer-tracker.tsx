@@ -39,7 +39,6 @@ export default function BeerTracker({ liters, goal }: BeerTrackerProps) {
   }, []);
 
   const beerY = 200 - (animatedFill / 100) * 170;
-  const foamY = beerY - 5;
 
   if (!mounted) {
     return (
@@ -89,11 +88,6 @@ export default function BeerTracker({ liters, goal }: BeerTrackerProps) {
               <stop offset="30%" stopColor="#E59932" />
               <stop offset="60%" stopColor="#D4820A" />
               <stop offset="100%" stopColor="#B8660A" />
-            </linearGradient>
-
-            <linearGradient id="foamFillTracker" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#FFFEF8" />
-              <stop offset="100%" stopColor="#F5E6C8" />
             </linearGradient>
 
             <linearGradient id="glassShineTracker" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -158,28 +152,6 @@ export default function BeerTracker({ liters, goal }: BeerTrackerProps) {
               />
             ))}
           </g>
-
-          {/* Foam */}
-          {animatedFill > 5 && (
-            <g>
-              <ellipse
-                cx="80"
-                cy={foamY}
-                rx="45"
-                ry="10"
-                fill="url(#foamFillTracker)"
-              />
-              {[0, 1, 2, 3].map((i) => (
-                <circle
-                  key={`foam-${i}`}
-                  cx={45 + i * 23}
-                  cy={foamY - 5 - (i % 2) * 3}
-                  r={6 + (i % 2) * 3}
-                  fill="#FFF8E8"
-                />
-              ))}
-            </g>
-          )}
 
           {/* Shine */}
           <path
