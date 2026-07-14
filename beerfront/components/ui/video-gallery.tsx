@@ -1,244 +1,232 @@
 "use client";
 
-import { memo, useState, useRef, useEffect } from "react";
-import { motion } from "framer-motion";
+import { memo, useEffect, useRef, useState } from "react";
+import {
+  SpeakerWaveIcon,
+  SpeakerXMarkIcon,
+} from "@heroicons/react/24/solid";
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+} from "framer-motion";
 import type { Video } from "@/app/lib/definitions";
 
 interface VideoGalleryProps {
   videos: Video[];
   loading: boolean;
+  error?: boolean;
 }
 
 interface VideoItemProps {
   video: Video;
   index: number;
-  onExpand: (video: Video) => void;
 }
 
-// Individual video card with polaroid style
-const VideoItem = memo(function VideoItem({ video, index, onExpand }: VideoItemProps) {
+const VideoItem = memo(function VideoItem({ video, index }: VideoItemProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const reduceMotion = useReducedMotion();
 
-  // Intersection observer for autoplay
   useEffect(() => {
-    const videoEl = videoRef.current;
-    if (!videoEl) return;
+    const videoElement = videoRef.current;
+    if (!videoElement || reduceMotion) return;
 
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && isLoaded) {
-            videoEl.currentTime = 0;
-            videoEl.play().catch(() => {});
-            setIsPlaying(true);
-          } else {
-            videoEl.pause();
-            setIsPlaying(false);
-          }
-        });
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          videoElement.play().catch(() => undefined);
+        } else {
+          videoElement.pause();
+        }
       },
-      { threshold: 0.5 }
+      { threshold: 0.45 },
     );
 
-    observer.observe(videoEl);
+    observer.observe(videoElement);
     return () => observer.disconnect();
-  }, [isLoaded]);
+  }, [reduceMotion]);
 
-  const handleVideoClick = () => {
-    const videoEl = videoRef.current;
-    if (!videoEl) return;
-    videoEl.muted = !videoEl.muted;
-    setIsMuted(videoEl.muted);
+  const toggleSound = () => {
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
+
+    const nextMuted = !videoElement.muted;
+    videoElement.muted = nextMuted;
+    setIsMuted(nextMuted);
+    if (videoElement.paused) videoElement.play().catch(() => undefined);
   };
 
-  // Staggered random rotation for organic feel
-  const rotation = ((index * 7) % 9) - 4; // Random-ish rotation between -4 and 4 degrees
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 60, rotate: rotation * 2 }}
-      whileInView={{ opacity: 1, y: 0, rotate: rotation }}
-      viewport={{ once: true, margin: "-100px" }}
+    <motion.article
+      initial={
+        reduceMotion
+          ? false
+          : { opacity: 0, transform: "translate3d(0, 28px, 0)" }
+      }
+      whileInView={{ opacity: 1, transform: "translate3d(0, 0px, 0)" }}
+      viewport={{ once: true, amount: 0.14 }}
       transition={{
-        duration: 0.7,
-        delay: index * 0.1,
-        ease: [0.16, 1, 0.3, 1]
+        duration: 0.58,
+        delay: (index % 3) * 0.055,
+        ease: [0.16, 1, 0.3, 1],
       }}
-      className="relative group"
+      className="video-grid-item h-full"
     >
-      <motion.div
-        className="relative overflow-hidden cursor-pointer"
-        style={{
-          background: "linear-gradient(145deg, #1a1410 0%, #0d0906 100%)",
-          borderRadius: "1rem",
-          border: "1px solid rgba(199, 127, 50, 0.15)",
-          boxShadow: `
-            0 4px 20px rgba(0, 0, 0, 0.4),
-            0 0 40px rgba(199, 127, 50, 0.03),
-            inset 0 1px 0 rgba(255, 255, 255, 0.03)
-          `,
-          transform: `rotate(${rotation}deg)`
-        }}
-        whileHover={{
-          scale: 1.02,
-          rotate: 0,
-          boxShadow: `
-            0 12px 40px rgba(0, 0, 0, 0.5),
-            0 0 60px rgba(199, 127, 50, 0.08)
-          `
-        }}
-        transition={{ duration: 0.3 }}
-        onClick={handleVideoClick}
-      >
-        {/* Video container */}
-        <div className="relative aspect-[4/5] overflow-hidden">
-          {/* Main video */}
+      <div className="video-receipt flex h-full flex-col overflow-hidden rounded-[1.5rem] border-[3px] border-ink bg-background shadow-[7px_7px_0_var(--ink)]">
+        <motion.button
+          type="button"
+          aria-label={`${isMuted ? "Turn sound on for" : "Mute"} ${video.caption || "video evidence"}`}
+          aria-pressed={!isMuted}
+          onClick={toggleSound}
+          initial={
+            reduceMotion
+              ? false
+              : { clipPath: "inset(0 0 12% 0 round 1.25rem 1.25rem 0 0)" }
+          }
+          whileInView={{ clipPath: "inset(0 0 0% 0 round 1.25rem 1.25rem 0 0)" }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.72, ease: [0.77, 0, 0.175, 1] }}
+          className="group relative block aspect-square w-full shrink-0 cursor-pointer overflow-hidden bg-[#202020] text-left"
+        >
+          {!isLoaded && (
+            <div className="video-skeleton absolute inset-0" aria-hidden="true" />
+          )}
+
           <video
             ref={videoRef}
             src={video.url}
-            className="w-full h-full object-cover"
+            className={`h-full w-full object-cover transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-[1.015] ${
+              isLoaded ? "opacity-100" : "opacity-0"
+            }`}
             loop
             playsInline
             muted={isMuted}
+            preload="metadata"
             onCanPlay={() => setIsLoaded(true)}
           />
 
-          {/* Loading overlay */}
-          {!isLoaded && (
-            <div className="absolute inset-0 flex items-center justify-center bg-[#0d0906]">
-              <div
-                className="w-8 h-8 rounded-full animate-spin"
-                style={{
-                  border: "2px solid rgba(199, 127, 50, 0.2)",
-                  borderTopColor: "rgba(229, 168, 75, 0.8)"
-                }}
-              />
-            </div>
-          )}
+          <span className="absolute right-3 top-3 flex size-11 items-center justify-center rounded-full border-2 border-ink bg-paper text-ink shadow-[3px_3px_0_var(--ink)] sm:right-4 sm:top-4">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={isMuted ? "muted" : "playing"}
+                initial={reduceMotion ? false : { opacity: 0, transform: "scale(0.92)" }}
+                animate={{ opacity: 1, transform: "scale(1)" }}
+                exit={{ opacity: 0, transform: "scale(0.92)" }}
+                transition={{ duration: 0.14, ease: [0.23, 1, 0.32, 1] }}
+              >
+                {isMuted ? (
+                  <SpeakerXMarkIcon aria-hidden="true" className="size-4" />
+                ) : (
+                  <SpeakerWaveIcon aria-hidden="true" className="size-4" />
+                )}
+              </motion.span>
+            </AnimatePresence>
+          </span>
+        </motion.button>
 
-          {/* Sound indicator */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: !isMuted ? 1 : 0, scale: !isMuted ? 1 : 0.8 }}
-            className="absolute top-3 right-3 z-20 rounded-full p-2.5"
-            style={{
-              background: "rgba(13, 9, 6, 0.8)",
-              backdropFilter: "blur(8px)",
-              border: "1px solid rgba(199, 127, 50, 0.2)"
-            }}
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{ color: "#f5efe6" }}
-            >
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-              <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-            </svg>
-          </motion.div>
-
-          {/* Hover gradient */}
-          <div
-            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-            style={{
-              background: "linear-gradient(0deg, rgba(13, 9, 6, 0.5) 0%, transparent 40%)"
-            }}
-          />
-        </div>
-
-        {/* Caption area - polaroid style */}
-        <div className="p-4 pb-5">
-          <p
-            className="text-sm font-light leading-relaxed line-clamp-2"
-            style={{ color: "rgba(245, 239, 230, 0.85)" }}
-          >
-            {video.caption || "Untitled"}
+        <div className="flex flex-1 flex-col px-5 pb-5 pt-4 text-ink">
+          <p className="text-pretty min-h-[2.5em] text-lg font-black leading-tight tracking-[-0.025em]">
+            {video.caption || "Beer successfully consumed"}
           </p>
-          <time
-            className="block mt-2 text-xs uppercase tracking-wider"
-            style={{ color: "rgba(199, 127, 50, 0.5)" }}
-          >
+          <time className="mt-auto block pt-3 text-xs font-bold text-ink/55">
             {new Date(video.created_at).toLocaleDateString("en-US", {
               month: "short",
               day: "numeric",
-              year: "numeric"
+              year: "numeric",
             })}
           </time>
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </motion.article>
   );
 });
 
-// Loading skeleton
-function VideoSkeleton({ index }: { index: number }) {
-  const rotation = ((index * 7) % 9) - 4;
-
+function VideoSkeleton() {
   return (
-    <div
-      className="relative overflow-hidden"
-      style={{
-        background: "linear-gradient(145deg, #1a1410 0%, #0d0906 100%)",
-        borderRadius: "1rem",
-        border: "1px solid rgba(199, 127, 50, 0.1)",
-        transform: `rotate(${rotation}deg)`
-      }}
-    >
-      <div className="aspect-[4/5] animate-pulse bg-gradient-to-br from-amber-900/10 to-transparent" />
-      <div className="p-4 pb-5 space-y-3">
-        <div className="h-4 bg-amber-900/10 rounded animate-pulse w-3/4" />
-        <div className="h-3 bg-amber-900/10 rounded animate-pulse w-1/3" />
+    <div className="video-grid-item">
+      <div className="overflow-hidden rounded-[1.5rem] border-[3px] border-ink bg-background shadow-[7px_7px_0_var(--ink)]">
+        <div className="video-skeleton aspect-square" />
+        <div className="h-[6.5rem]" />
       </div>
     </div>
   );
 }
 
-// Main gallery component
-export default function VideoGallery({ videos, loading }: VideoGalleryProps) {
-  const [expandedVideo, setExpandedVideo] = useState<Video | null>(null);
-
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 px-4 md:px-8 max-w-7xl mx-auto">
-        {[0, 1, 2, 3, 4, 5].map((i) => (
-          <VideoSkeleton key={i} index={i} />
-        ))}
-      </div>
-    );
-  }
-
-  if (videos.length === 0) {
-    return (
-      <div className="text-center py-20">
-        <p className="text-lg" style={{ color: "rgba(200, 180, 160, 0.6)" }}>
-          No videos yet
-        </p>
-      </div>
-    );
-  }
+export default function VideoGallery({
+  videos,
+  loading,
+  error = false,
+}: VideoGalleryProps) {
+  const reduceMotion = useReducedMotion();
 
   return (
-    <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 px-4 md:px-8 max-w-7xl mx-auto">
-        {videos.map((video, index) => (
-          <VideoItem
-            key={video.id}
-            video={video}
-            index={index}
-            onExpand={setExpandedVideo}
-          />
-        ))}
-      </div>
+    <section id="proof" className="border-b-[3px] border-ink bg-paper py-20 md:py-32">
+      <div className="site-container">
+        <motion.div
+          initial={
+            reduceMotion
+              ? false
+              : { opacity: 0, transform: "translate3d(0, 26px, 0)" }
+          }
+          whileInView={{ opacity: 1, transform: "translate3d(0, 0px, 0)" }}
+          viewport={{ once: true, amount: 0.55 }}
+          transition={{ duration: 0.62, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-12 max-w-3xl md:mb-16"
+        >
+          <p className="font-display text-2xl font-semibold italic text-accent md:text-3xl">
+            Video receipts
+          </p>
+          <h2 className="text-balance mt-2 pb-[0.08em] text-5xl font-black leading-[0.96] tracking-[-0.065em] text-ink md:text-8xl">
+            Proof I drank them.
+          </h2>
+          <p className="mt-5 max-w-lg text-base font-semibold leading-relaxed text-ink/65 md:text-lg">
+            Tap any video for sound. Yes, I really do drink every single one.
+          </p>
+        </motion.div>
 
-    </>
+        {loading ? (
+          <div className="video-grid">
+            {[0, 1, 2, 3, 4, 5].map((index) => (
+              <VideoSkeleton key={index} />
+            ))}
+          </div>
+        ) : error ? (
+          <div className="rounded-[1.75rem] border-[3px] border-ink bg-background px-6 py-16 text-center shadow-[8px_8px_0_var(--ink)] sm:px-10">
+            <h3 className="text-2xl font-black tracking-[-0.04em] text-ink">
+              The evidence is hiding.
+            </h3>
+            <p className="mx-auto mt-3 max-w-md font-semibold text-ink/65">
+              Refresh the page and the videos should come stumbling back in.
+            </p>
+          </div>
+        ) : videos.length === 0 ? (
+          <div className="grid min-h-[22rem] place-items-center rounded-[1.75rem] border-[3px] border-ink bg-background px-6 py-16 text-center shadow-[8px_8px_0_var(--ink)]">
+            <div>
+              <p className="text-5xl" aria-hidden="true">
+                🍺
+              </p>
+              <p className="mt-4 text-3xl font-black tracking-[-0.04em] text-ink">
+                No evidence yet.
+              </p>
+              <p className="mx-auto mt-3 max-w-sm font-semibold text-ink/65">
+                Buy the first one and give this empty wall something to do.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="video-grid">
+            {videos.map((video, index) => (
+              <VideoItem
+                key={`${video.id}:${video.url}`}
+                video={video}
+                index={index}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

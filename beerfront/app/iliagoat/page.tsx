@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { videoService, beerService } from "../lib/api/videos";
 import type { Video } from "../lib/definitions";
 import MeshGradientBackground from "@/components/ui/mesh-gradient-background";
@@ -572,4 +572,3 @@ export default function UploadPage() {
     </div>
   );
 }
-

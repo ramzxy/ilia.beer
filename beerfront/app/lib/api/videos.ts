@@ -25,7 +25,17 @@ export const videoService = {
       const response = await apiClient.get<Video[]>("/api/videos");
       // Ensure response.data is always an array
       if (Array.isArray(response.data)) {
-        return response.data;
+        return [...response.data].sort((first, second) => {
+          const firstCreatedAt = Date.parse(first.created_at);
+          const secondCreatedAt = Date.parse(second.created_at);
+          const createdAtDifference = secondCreatedAt - firstCreatedAt;
+
+          if (Number.isFinite(createdAtDifference) && createdAtDifference !== 0) {
+            return createdAtDifference;
+          }
+
+          return Number(second.id) - Number(first.id);
+        });
       }
       console.warn("API returned non-array response:", response.data);
       return [];
@@ -157,4 +167,3 @@ export const beerService = {
     return response.data;
   }
 };
-

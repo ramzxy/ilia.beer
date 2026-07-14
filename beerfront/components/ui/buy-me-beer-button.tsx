@@ -1,64 +1,35 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { ArrowUpRightIcon } from "@heroicons/react/24/outline";
+import { motion, useReducedMotion } from "framer-motion";
 
-export default function BuyMeBeerButton() {
+const BUY_URL = "https://buymeacoffee.com/rmxzy/e/473225";
+
+interface BuyMeBeerButtonProps {
+  variant?: "accent" | "dark";
+}
+
+export default function BuyMeBeerButton({
+  variant = "accent",
+}: BuyMeBeerButtonProps) {
+  const reduceMotion = useReducedMotion();
+
   return (
     <motion.a
-      href="https://buymeacoffee.com/rmxzy/e/473225"
+      href={BUY_URL}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-3 px-10 py-5 text-lg font-semibold rounded-full transition-all relative overflow-hidden group"
-      style={{
-        background: "linear-gradient(135deg, #e5a84b 0%, #c77f32 50%, #a65d21 100%)",
-        color: "#1a0f05",
-        border: "2px solid rgba(229, 168, 75, 0.6)",
-        boxShadow: "0 0 20px rgba(199, 127, 50, 0.25), 0 4px 16px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
-      }}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-      whileHover={{ 
-        scale: 1.05,
-        boxShadow: "0 0 30px rgba(199, 127, 50, 0.4), 0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25)"
-      }}
-      whileTap={{ scale: 0.98 }}
+      initial={reduceMotion ? false : { opacity: 0, transform: "translateY(12px)" }}
+      animate={{ opacity: 1, transform: "translateY(0px)" }}
+      transition={{ duration: 0.5, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
+      className={`interactive-press inline-flex w-fit items-center justify-center gap-3 rounded-2xl border-2 border-ink px-6 py-3.5 text-sm font-black shadow-[5px_5px_0_var(--ink)] hover:-translate-y-0.5 sm:px-7 sm:py-4 ${
+        variant === "accent"
+          ? "bg-accent text-paper hover:bg-paper hover:text-ink"
+          : "bg-ink text-paper hover:bg-accent"
+      }`}
     >
-      {/* Shimmer effect on hover */}
-      <motion.div
-        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        style={{
-          background: "linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.2) 50%, transparent 60%)",
-          backgroundSize: "200% 100%"
-        }}
-        animate={{
-          backgroundPosition: ["200% 0%", "-200% 0%"]
-        }}
-        transition={{
-          duration: 1.5,
-          repeat: Infinity,
-          repeatDelay: 2
-        }}
-      />
-      
-      <svg
-        width="26"
-        height="26"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="relative z-10"
-      >
-        <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
-        <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
-        <line x1="6" y1="1" x2="6" y2="4" />
-        <line x1="10" y1="1" x2="10" y2="4" />
-        <line x1="14" y1="1" x2="14" y2="4" />
-      </svg>
-      <span className="relative z-10 tracking-wide">Buy me a beer 🍺</span>
+      Buy me a beer
+      <ArrowUpRightIcon aria-hidden="true" className="size-4 stroke-[2.5]" />
     </motion.a>
   );
 }

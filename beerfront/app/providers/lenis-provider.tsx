@@ -29,11 +29,11 @@ export default function LenisScrollProvider({
   const isInitializedRef = useRef(false);
 
   // Optimized RAF loop
-  const raf = useCallback((time: number) => {
+  const raf = useCallback(function frame(time: number) {
     if (lenisRef.current) {
       lenisRef.current.raf(time);
     }
-    rafRef.current = requestAnimationFrame(raf);
+    rafRef.current = requestAnimationFrame(frame);
   }, []);
 
   // Clean up Lenis instance

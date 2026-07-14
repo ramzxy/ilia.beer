@@ -13,7 +13,7 @@ class VideoGateway {
         $query = "
             SELECT id, caption, url, created_at 
             FROM videos
-            ORDER BY created_at DESC
+            ORDER BY created_at DESC, id DESC
         ";
 
         try {
